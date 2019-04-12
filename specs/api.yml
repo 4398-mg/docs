@@ -1,0 +1,311 @@
+openapi: 3.0.0
+info:
+  title: Wimbo Song Generation API
+  description: |
+    The Wimbo Song Generation API is an API that allows users to generate custom
+    music and many extensions around this functionality.
+  version: 0.1
+servers:
+  - url: http://api.thewimbo.me/
+    description: Main API for thewimbo.me song generation
+paths:
+  /generate_song:
+    post:
+      summary: Generate a song
+      description: "Path: /generate_song"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                  - $ref: '#/components/schemas/LoggedOut'
+                  - $ref: '#/components/schemas/LoggedIn'
+                
+      responses:
+        '200':    # status code
+          description: |
+            A JSON object containing information about the generated song
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  duration:
+                    type: string
+                    description: The duration of the generated song
+                    example: "short"
+                  genre:
+                    type: string
+                    description: The genre of the generated song
+                    example: "classical"
+                  tempo:
+                    type: string
+                    description: The tempo of the generated song
+                    example: "fast"
+                  location:
+                    type: url
+                    description: The URL from which the song can be downloaded
+                    example: "http://wimbo-music-bucket.s3.amazonaws.com/music/dd701fdf-0b11-4038-bb01-2dfbd1fba42a.mp3"
+                  midi_path:
+                    type: string
+                    description: |
+                      The location on the server where the generated MIDI file
+                      is stored
+                    example: "./app/main/g_midis/dd701fdf-0b11-4038-bb01-2dfbd1fba42a.mid"
+                  sheet_location:
+                    type: string
+                    description: |
+                      The location on the server where the generated sheet music
+                      is stored. This should always be null.
+                    example: null
+                  song_id:
+                    type: uuid
+                    description: |
+                      The unique ID of the generated song. This ID is used for
+                      various other endpoints that gather certain information
+                      and create data in regard to a specific song.
+                    example: dd701fdf-0b11-4038-bb01-2dfbd1fba42a
+                  song_name:
+                    type: string
+                    description: |
+                      The randomly selected name of the generated song.
+                    example: Waiting for life
+                  timestamp:
+                    type: string
+                    description: The timestamp for when the song was generated
+                    example: "Fri, 12 Apr 2019 04:07:32 GMT"
+        '400':    # status code
+          description: |
+            An invalid request was sent to the server. This could mean that you
+            failed to include required parameters or invalid parameter values
+            were sent. (See above for required and valid parameters)
+  /sheet_music:
+    post:
+      summary: Generate sheet music
+      description: "Path: /sheet_music"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                songID:
+                  type: string
+                  description: |
+                    The ID of the song for which sheet music is being generated
+                  example: dd701fdf-0b11-4038-bb01-2dfbd1fba42a
+      responses:
+        '200':    # status code
+          description: |
+            A JSON object containing the URL of the generated sheet music
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  sheet_location:
+                    type: url
+                    description: The URL of the generated sheet music
+                    example: "http://wimbo-music-bucket.s3.amazonaws.com/sheet_music/dd701fdf-0b11-4038-bb01-2dfbd1fba42a.zip"
+        '404':    # status code
+          description: An invalid song ID was provided
+  /history:
+    post:
+      summary: Get user history
+      description: "Path: /history"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profileID:
+                  type: string
+                  description: |
+                    The ID token of the user that we are requesting the history
+                    of
+                  example: reallyLongString
+                profileEmail:
+                  type: email
+                  description: |
+                    The email of the user that we are requesting the history
+                    of
+                  example: "username@example.com"
+      responses:
+        '200':    # status code
+          description: |
+            A JSON object containing all of the previously generated songs by
+            the user
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  history:
+                    type: array
+                    description: |
+                      An array of all previously generated songs by a user
+                    example: [
+                      {
+                        "duration": "short",
+                        "genre": "game",
+                        "location": "http://wimbo-music-bucket.s3.amazonaws.com/music/dd701fdf-0b11-4038-bb01-2dfbd1fba42a.mp3",
+                        "midi_path": "./app/main/g_midis/dd701fdf-0b11-4038-bb01-2dfbd1fba42a.mid",
+                        "sheet_location": null,
+                        "song_id": "dd701fdf-0b11-4038-bb01-2dfbd1fba42a",
+                        "song_name": "Waiting for life",
+                        "tempo": "slow",
+                        "timestamp": "Fri, 12 Apr 2019 04:07:32 GMT"
+                      }
+                    ]
+        '404':    # status code
+          description: An invlaid profile ID token and email pair was provided
+  /edit_song:
+    post:
+      summary: Edit song name
+      description: "Path: /edit_song"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                songID:
+                  type: string
+                  description: |
+                    The ID of the song for which the name is being edited
+                  example: dd701fdf-0b11-4038-bb01-2dfbd1fba42a
+                newName:
+                  type: string
+                  description: |
+                    The ID of the song for which the name is being edited
+                  example: dd701fdf-0b11-4038-bb01-2dfbd1fba42a
+                profileID:
+                  type: string
+                  description: |
+                    The ID token of the user that is tied to the song we are
+                    editing
+                  example: reallyLongString
+                profileEmail:
+                  type: email
+                  description: |
+                    The email of the user that is tied to the song we are
+                    editing
+                  example: "username@example.com"
+      responses:
+        '200':    # status code
+          description: |
+            A JSON object saying that the requested operation was successful
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation performed
+                    example: song name updated
+        '404':    # status code
+          description: An invalid song ID or email / token pair was provided
+  /remove_song:
+    post:
+      summary: Remove song from a user's history
+      description: "Path: /remove_song"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                songID:
+                  type: string
+                  description: |
+                    The ID of the song for which is being removed
+                  example: dd701fdf-0b11-4038-bb01-2dfbd1fba42a
+                profileID:
+                  type: string
+                  description: |
+                    The ID token of the user that is tied to the song we are
+                    removing
+                  example: reallyLongString
+                profileEmail:
+                  type: email
+                  description: |
+                    The email of the user that is tied to the song we are
+                    removing
+                  example: "username@example.com"
+      responses:
+        '200':    # status code
+          description: |
+            A JSON object saying that the requested operation was successful
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation performed
+                    example: song removed
+        '404':    # status code
+          description: An invalid song ID or email / token pair was provided
+
+components:
+  schemas:
+    LoggedOut:
+        type: object
+        properties:
+          genre:
+            type: string
+            description: The genre of the music that will be generated
+            enum: ["classical", "folk", "game"]
+            example: "classical"
+          duration:
+            type: string 
+            description: |
+              The duration of the music that will be generated. Short is about
+              1m30s, medium is about 3m30s, and long is about 5m0s.
+            enum: ["short", "medium", "long"]
+            example: "medium"
+          tempo:
+            type: string 
+            description: The general speed of the generated music.
+            enum: ["slow", "medium", "fast"]
+            example: "medium"
+    LoggedIn:
+      type: object
+      properties:
+        profileID:
+          type: string
+          description: |
+            The profile ID token of the user who is logged in.
+            The profile ID should be the profile ID token, not the profile ID.
+            This is to ensure somewhat safe security measures are followed.
+          example: reallyLongString
+        profileEmail:
+          type: email
+          description: The email of the user who is logged in.
+          example: "username@example.com"
+        genre:
+          type: string
+          description: The genre of the music that will be generated
+          enum: ["classical", "folk", "game"]
+          example: "classical"
+        duration:
+          type: string
+          description: |
+              The duration of the music that will be generated. Short is about
+              1m30s, medium is about 3m30s, and long is about 5m0s.
+          enum: ["short", "medium", "long"]
+          example: "medium"
+        tempo:
+          type: string
+          description: The general speed of the generated music.
+          enum: ["slow", "medium", "fast"]
+          example: "medium"
+        
