@@ -263,7 +263,7 @@ components:
           genre:
             type: string
             description: The genre of the music that will be generated
-            enum: ["classical", "folk", "game"]
+            enum: ["classical", "folk", "game", "jazz"]
             example: "classical"
           duration:
             type: string 
@@ -294,7 +294,7 @@ components:
         genre:
           type: string
           description: The genre of the music that will be generated
-          enum: ["classical", "folk", "game"]
+          enum: ["classical", "folk", "game", "jazz"]
           example: "classical"
         duration:
           type: string
